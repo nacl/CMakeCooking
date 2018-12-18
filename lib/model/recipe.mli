@@ -16,7 +16,7 @@ type t =
   | Raw of raw
   | Cooked of cooked
 
-(** {1 Names} *)
+(** {2 Names} *)
 
 (** Recipes are identified through their name. *)
 type name = string
@@ -30,7 +30,7 @@ val equal_name :
 val pp_name :
   name Fmt.t
 
-(** {1 Error handling} *)
+(** {2 Error handling} *)
 
 type error = [
   | `Dependency_cycle
@@ -50,7 +50,7 @@ type nonrec 'a result = ('a, error) result
 val error_to_msg :
   'a result -> ('a, R.msg) Rresult.result
 
-(** {1 Writing recipes} *)
+(** {2 Writing recipes} *)
 
 val raw :
   name -> raw
@@ -97,7 +97,7 @@ val before :
     If either [d1] or [d2] refer to ingredients which are not direct dependencies of [cr] then the result is an error of
    [`Not_a_direct_dependency]. *)
 
-(** {1 Executing recipes} *)
+(** {2 Executing recipes} *)
 
 (** Restrictions specify limits on which ingredients are actually executed in a recipe. *)
 type restrictions = [
@@ -117,7 +117,7 @@ val execute :
     If an ingredient has actual dependencies that are not satisfied at the time that it is executed, then the result is
    an error of [`Missing_actual_dependencies]. *)
 
-(** {1 Logging} *)
+(** {2 Logging} *)
 
 val log_source :
   Logs.src
