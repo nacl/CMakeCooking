@@ -56,28 +56,43 @@ module Impl = struct
   let configure_cooking_project
       ?env
       ?err
+      ?recipe
       ?restrictions
       ~source_dir
       ~build_dir
       ~install_dir
-      ~recipe
       ~cmake_args
       () =
-    let cmd = Cmd.(
-        v (p Fpath.((Abs_fpath.extract source_dir) / cooking_executable))
-        % "-d" % p (Abs_fpath.extract build_dir)
-        % "-r" % recipe
-        %% (match restrictions with
-            | None -> empty
-            | Some rs -> begin
-                let slip, xs =
-                  match rs with
-                  | `Include xs -> "-i", xs
-                  | `Exclude xs -> "-e", xs
-                in
+    let cmd =
+      let base =
+        Cmd.(
+          v (p Fpath.((Abs_fpath.extract source_dir) / cooking_executable))
+          % "-d" % p (Abs_fpath.extract build_dir))
+      in
 
-                of_list ~slip xs
-              end)
+      let with_optional_recipe =
+        match recipe with
+        | None -> base
+        | Some recipe -> begin
+            Cmd.(
+              base
+              % "-r" % recipe
+              %% (match restrictions with
+                  | None -> empty
+                  | Some rs -> begin
+                      let slip, xs =
+                        match rs with
+                        | `Include xs -> "-i", xs
+                        | `Exclude xs -> "-e", xs
+                      in
+
+                      of_list ~slip xs
+                    end))
+          end
+      in
+
+      Cmd.(
+        with_optional_recipe
         % "--"
         %% install_prefix install_dir
         %% cmake_args)
@@ -125,7 +140,7 @@ type restrictions = [
   | `Include of string list
 ]
 
-let configure_with_cooking ?restrictions ?(cmake_args=Cmd.empty) ~recipe p =
+let configure_with_cooking ?recipe ?restrictions ?(cmake_args=Cmd.empty) p =
   fun ?env ?err () ->
     Abs_fpath.check p.Project.source_dir >>= fun source_dir ->
     Abs_fpath.check p.build_dir >>= fun build_dir ->
@@ -134,11 +149,11 @@ let configure_with_cooking ?restrictions ?(cmake_args=Cmd.empty) ~recipe p =
     Impl.configure_cooking_project
       ?env
       ?err
+      ?recipe
       ?restrictions
       ~source_dir
       ~build_dir
       ~install_dir
-      ~recipe
       ~cmake_args
       ()
     |> R.ok
@@ -166,9 +181,9 @@ let configure_and_build_cmake_project ?args ?target p out =
     (build_with_cmake ?target p)
     out
 
-let configure_and_build_cooking_project ?restrictions ?cmake_args ?target ~recipe p out =
+let configure_and_build_cooking_project ?recipe ?restrictions ?cmake_args ?target p out =
   combine
-    (configure_with_cooking ?restrictions ?cmake_args ~recipe p)
+    (configure_with_cooking ?recipe ?restrictions ?cmake_args p)
     (build_with_cmake ?target p)
     out
 

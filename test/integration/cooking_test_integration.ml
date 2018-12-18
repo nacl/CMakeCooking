@@ -83,8 +83,8 @@ let exec (ing : ingredient) out f g =
         ()
       |> R.join)
 
-let exec_with_cooking ?(recipe="dev") ?restrictions ?cmake_args ?target ingredient out g =
-  let f p = Runner.configure_and_build_cooking_project ?cmake_args ?restrictions ?target ~recipe p out in
+let exec_with_cooking ?recipe ?restrictions ?cmake_args ?target ingredient out g =
+  let f p = Runner.configure_and_build_cooking_project ?cmake_args ?recipe ?restrictions ?target p out in
   exec ingredient out f g
 
 let exec_with_cmake ?args ?target ingredient out g =
@@ -132,17 +132,17 @@ let tests pantry_path log_level =
 
   let t3 =
     test "Project `carrot`" (fun () ->
-        exec_with_cooking P.carrot out (fun _ -> Ok ()))
+        exec_with_cooking ~recipe:"dev" P.carrot out (fun _ -> Ok ()))
   in
 
   let t4 =
     test "Project `banana`" (fun () ->
-        exec_with_cooking P.banana out (fun _ -> Ok ()))
+        exec_with_cooking ~recipe:"dev" P.banana out (fun _ -> Ok ()))
   in
 
   let t5 =
     test "Project `apple`" (fun () ->
-        exec_with_cooking P.apple out (fun _ -> Ok ()))
+        exec_with_cooking ~recipe:"dev" P.apple out (fun _ -> Ok ()))
   in
 
   let t6 =
@@ -157,6 +157,7 @@ let tests pantry_path log_level =
         exec_and_install_with_cmake P.egg out (fun p_e ->
             exec_with_cooking
               ~cmake_args:(prefix_path [p_e])
+              ~recipe:"dev"
               ~restrictions:(`Exclude ["Egg"])
               P.carrot
               out
@@ -169,6 +170,7 @@ let tests pantry_path log_level =
             exec_and_install_with_cmake P.durian out (fun p_d ->
                 exec_with_cooking
                   ~cmake_args:(prefix_path [p_e; p_d])
+                  ~recipe:"dev"
                   ~restrictions:(`Exclude ["Egg"; "Durian"])
                   P.carrot
                   out
@@ -180,6 +182,7 @@ let tests pantry_path log_level =
         exec_and_install_with_cmake P.durian out (fun p_d ->
             exec_with_cooking
               ~cmake_args:(prefix_path [p_d])
+              ~recipe:"dev"
               ~restrictions:(`Include ["Egg"; "Carrot"])
               P.banana
               out
@@ -192,6 +195,7 @@ let tests pantry_path log_level =
             exec_and_install_with_cmake P.durian out (fun p_d ->
                 exec_with_cooking
                   ~cmake_args:(prefix_path [p_e; p_d])
+                  ~recipe:"dev"
                   ~restrictions:(`Include ["Carrot"])
                   P.banana
                   out

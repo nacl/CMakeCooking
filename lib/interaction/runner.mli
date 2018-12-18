@@ -22,13 +22,13 @@ val configure_with_cmake :
 (** [configure_with_cmake ?args p] produces a step which configures the project [p] with `cmake` arguments [args]. *)
 
 val configure_with_cooking :
+  ?recipe:string ->
   ?restrictions:restrictions ->
   ?cmake_args:Cmd.t ->
-  recipe:string ->
   Project.t ->
   OS.Cmd.run_out step
-(** [configure_with_cooking ?restrictions ?cmake_args ~recipe p] produces a step which configures the project [p] with
-   [cmake-cooking] subject to the [restrictions] according to the recipe [r] and with the `cmake` arguments
+(** [configure_with_cooking ?recipe ?restrictions ?cmake_args p] produces a step which configures the project [p] with
+   [cmake-cooking] subject to the [restrictions] according to the optional recipe and with the `cmake` arguments
    [cmake_args]. *)
 
 val build_with_cmake :
@@ -57,16 +57,17 @@ val configure_and_build_cmake_project :
    `cmake` arguments [args] and then (with [o]) builds the project's default target (or [target] if it is provided). *)
 
 val configure_and_build_cooking_project :
+  ?recipe:string ->
   ?restrictions:restrictions ->
   ?cmake_args:Cmd.t ->
   ?target:string ->
-  recipe:string ->
   Project.t ->
   out ->
   OS.Cmd.run_out step
-(** [configure_and_build_cooking_project ?restrictions ?cmake_args ?target r p o] produces a step which first configures
-   the project [p] with [cmake-cooking] subject to [restrictions], with [cmake] arguments [cmake_args], and according to
-   the recipe [r] and then (with [o]) builds the project's default target (or [target] if it is provided). *)
+(** [configure_and_build_cooking_project ?recipe ?restrictions ?cmake_args ?target p o] produces a step which first
+   configures the project [p] with [cmake-cooking] subject to [restrictions], with [cmake] arguments [cmake_args], and
+   according to the optional recipe and then (with [o]) builds the project's default target (or [target] if it is
+   provided). *)
 
 val log_source :
   Logs.src
