@@ -202,6 +202,17 @@ let tests pantry_path log_level =
                   (fun _ -> Ok ()))))
   in
 
+  let t11 =
+    test "A cooking project can exclude a recipe when its dependencies are satisfied externally" (fun () ->
+        exec_and_install_with_cmake P.egg out (fun p_e ->
+            exec_and_install_with_cmake P.durian out (fun p_d ->
+                exec_with_cooking
+                  ~cmake_args:(prefix_path [p_e; p_d])
+                  P.carrot
+                  out
+                  (fun _ -> Ok ()))))
+  in
+
   [
     t1;
     t2;
@@ -212,7 +223,8 @@ let tests pantry_path log_level =
     t7;
     t8;
     t9;
-    t10
+    t10;
+    t11
   ]
 
 (*

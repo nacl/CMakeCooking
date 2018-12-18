@@ -153,6 +153,10 @@ yell_include_exclude_mutually_exclusive() {
     echo "Cooking: [-e] and [-i] are mutually exclusive options!" >&2
 }
 
+yell_list_only_without_recipe() {
+    echo "Cooking: cannot list ingredients without a recipe!" >&2
+}
+
 while getopts "ar:e:i:d:p:t:g:s:lhx" arg; do
     case "${arg}" in
         a)
@@ -194,6 +198,11 @@ while getopts "ar:e:i:d:p:t:g:s:lhx" arg; do
 done
 
 shift $((OPTIND - 1))
+
+if [ -n "${list_only}" ] && [ -z "${recipe}" ]; then
+    yell_list_only_without_recipe
+    exit 1
+fi
 
 cooking_dir="${build_dir}/_cooking"
 cmake_dir="${source_dir}/cmake"
@@ -856,37 +865,40 @@ if [ -n "${list_only}" ]; then
 fi
 
 ${CMAKE} -DCMAKE_BUILD_TYPE="${build_type}" "${cmake_cooking_args[@]}" -G "${generator}" "${source_dir}" "${@}"
-${CMAKE} --build . --target _cooking_ingredients_ready -- "${build_args[@]}"
 
-#
-# Report what we've done (if we're not nested).
-#
+if [ -n "${recipe}" ]; then
+    ${CMAKE} --build . --target _cooking_ingredients_ready -- "${build_args[@]}"
 
-if [ -z "${nested}" ]; then
-    ingredients=($(find "${ingredients_dir}" -name '.cooking_ingredient_*' -printf '%f\n' | sed -r 's/\.cooking_ingredient_(.+)/\1/'))
+    #
+    # Report what we've done (if we're not nested).
+    #
 
-    if [ -z "${list_only}" ]; then
-        printf "\nCooking: Installed the following ingredients:\n"
-    else
-        printf "\nCooking: The following ingredients are necessary for this recipe:\n"
+    if [ -z "${nested}" ]; then
+        ingredients=($(find "${ingredients_dir}" -name '.cooking_ingredient_*' -printf '%f\n' | sed -r 's/\.cooking_ingredient_(.+)/\1/'))
+
+        if [ -z "${list_only}" ]; then
+            printf "\nCooking: Installed the following ingredients:\n"
+        else
+            printf "\nCooking: The following ingredients are necessary for this recipe:\n"
+        fi
+
+        for ingredient in "${ingredients[@]}"; do
+            echo "  - ${ingredient}"
+        done
+
+        printf '\n'
     fi
 
-    for ingredient in "${ingredients[@]}"; do
-        echo "  - ${ingredient}"
-    done
+    if [ -n "${list_only}" ]; then
+        exit 0
+    fi
 
-    printf '\n'
+    #
+    # Configure the project, expecting all requirements satisfied.
+    #
+
+    ${CMAKE} -DCMAKE_FIND_PACKAGE_NO_PACKAGE_REGISTRY=ON "${@}" .
 fi
-
-if [ -n "${list_only}" ]; then
-    exit 0
-fi
-
-#
-# Configure the project, expecting all requirements satisfied.
-#
-
-${CMAKE} -DCMAKE_FIND_PACKAGE_NO_PACKAGE_REGISTRY=ON "${@}" .
 
 #
 # Save invocation information.
