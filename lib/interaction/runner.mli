@@ -24,12 +24,13 @@ val configure_with_cmake :
 val configure_with_cooking :
   ?recipe:string ->
   ?restrictions:restrictions ->
+  ?export_dir:Fpath.t ->
   ?cmake_args:Cmd.t ->
   Project.t ->
   OS.Cmd.run_out step
-(** [configure_with_cooking ?recipe ?restrictions ?cmake_args p] produces a step which configures the project [p] with
-   [cmake-cooking] subject to the [restrictions] according to the optional recipe and with the `cmake` arguments
-   [cmake_args]. *)
+(** [configure_with_cooking ?recipe ?restrictions ?export_dir ?cmake_args p] produces a step which configures the
+   project [p] with [cmake-cooking] subject to the [restrictions] according to the optional recipe and with the `cmake`
+   arguments [cmake_args]. *)
 
 val build_with_cmake :
   ?target:string -> Project.t -> OS.Cmd.run_out step
@@ -59,6 +60,7 @@ val configure_and_build_cmake_project :
 val configure_and_build_cooking_project :
   ?recipe:string ->
   ?restrictions:restrictions ->
+  ?export_dir:Fpath.t ->
   ?cmake_args:Cmd.t ->
   ?target:string ->
   Project.t ->

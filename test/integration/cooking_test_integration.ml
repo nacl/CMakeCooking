@@ -14,6 +14,12 @@ let with_install_dir f =
     (fun install_dir () -> f install_dir)
     ()
 
+let with_export_dir f =
+  OS.Dir.with_tmp
+    "cooking-test-export-%s"
+    (fun export_dir () -> f export_dir)
+    ()
+
 type ingredient =
   (Project.t -> unit Runner.result) -> unit Runner.result
 
@@ -83,16 +89,16 @@ let exec (ing : ingredient) out f g =
         ()
       |> R.join)
 
-let exec_with_cooking ?recipe ?restrictions ?cmake_args ?target ingredient out g =
-  let f p = Runner.configure_and_build_cooking_project ?cmake_args ?recipe ?restrictions ?target p out in
+let exec_with_cooking ?recipe ?restrictions ?export_dir ?cmake_args ?target ingredient out g =
+  let f p = Runner.configure_and_build_cooking_project ?cmake_args ?recipe ?restrictions ?export_dir ?target p out in
   exec ingredient out f g
 
 let exec_with_cmake ?args ?target ingredient out g =
   let f p = Runner.configure_and_build_cmake_project ?args ?target p out in
   exec ingredient out f g
 
-let exec_and_install_with_cooking ?recipe ?restrictions ?cmake_args ingredient out g =
-  exec_with_cooking ?recipe ?restrictions ?cmake_args ~target:"install" ingredient out g
+let exec_and_install_with_cooking ?recipe ?restrictions ?export_dir ?cmake_args ingredient out g =
+  exec_with_cooking ?recipe ?restrictions ?export_dir ?cmake_args ~target:"install" ingredient out g
 
 let exec_and_install_with_cmake ?args ingredient out g =
   exec_with_cmake ?args ~target:"install" ingredient out g
@@ -213,6 +219,24 @@ let tests pantry_path log_level =
                   (fun _ -> Ok ()))))
   in
 
+  let t12 =
+    test "A cooking project's installed dependencies can be exported" (fun () ->
+        with_export_dir (fun export_dir ->
+            exec_with_cooking
+              ~recipe:"dev"
+              ~export_dir
+              P.apple
+              out
+              (fun _ -> Ok ())
+            >>= fun () ->
+
+            exec_with_cmake
+              ~args:Cmd.(v ("-DCMAKE_PREFIX_PATH=" ^ Fpath.to_string export_dir))
+              P.apple
+              out
+              (fun _ -> Ok ())))
+  in
+
   [
     t1;
     t2;
@@ -224,7 +248,8 @@ let tests pantry_path log_level =
     t8;
     t9;
     t10;
-    t11
+    t11;
+    t12
   ]
 
 (*

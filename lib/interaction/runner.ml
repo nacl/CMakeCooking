@@ -58,6 +58,7 @@ module Impl = struct
       ?err
       ?recipe
       ?restrictions
+      ?export_dir
       ~source_dir
       ~build_dir
       ~install_dir
@@ -91,8 +92,18 @@ module Impl = struct
           end
       in
 
+      let with_optional_export_dir =
+        match export_dir with
+        | None -> with_optional_recipe
+        | Some export_dir -> begin
+            Cmd.(
+              with_optional_recipe
+                % "-f" % p (Abs_fpath.extract export_dir))
+          end
+      in
+
       Cmd.(
-        with_optional_recipe
+        with_optional_export_dir
         % "--"
         %% install_prefix install_dir
         %% cmake_args)
@@ -140,17 +151,23 @@ type restrictions = [
   | `Include of string list
 ]
 
-let configure_with_cooking ?recipe ?restrictions ?(cmake_args=Cmd.empty) p =
+let configure_with_cooking ?recipe ?restrictions ?export_dir ?(cmake_args=Cmd.empty) p =
   fun ?env ?err () ->
     Abs_fpath.check p.Project.source_dir >>= fun source_dir ->
     Abs_fpath.check p.build_dir >>= fun build_dir ->
     Abs_fpath.check p.install_dir >>= fun install_dir ->
+
+    (match export_dir with
+     | None -> Ok None
+     | Some export_dir -> Abs_fpath.check export_dir |> R.map (fun d -> Some d))
+    >>= fun export_dir ->
 
     Impl.configure_cooking_project
       ?env
       ?err
       ?recipe
       ?restrictions
+      ?export_dir
       ~source_dir
       ~build_dir
       ~install_dir
@@ -181,9 +198,9 @@ let configure_and_build_cmake_project ?args ?target p out =
     (build_with_cmake ?target p)
     out
 
-let configure_and_build_cooking_project ?recipe ?restrictions ?cmake_args ?target p out =
+let configure_and_build_cooking_project ?recipe ?restrictions ?export_dir ?cmake_args ?target p out =
   combine
-    (configure_with_cooking ?recipe ?restrictions ?cmake_args p)
+    (configure_with_cooking ?export_dir ?recipe ?restrictions ?cmake_args p)
     (build_with_cmake ?target p)
     out
 

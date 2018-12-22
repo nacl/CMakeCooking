@@ -60,6 +60,7 @@ where OPTIONS are:
 -t BUILD_TYPE (=${build_type})
 -g GENERATOR (=${generator})
 -s VAR=VALUE
+-f EXPORT_DIR
 -l
 -h
 
@@ -133,6 +134,17 @@ Option details:
 
    Set an environmental variable 'VAR' to the value 'VALUE' during the invocation of CMake.
 
+-f EXPORT_DIR
+
+   If provided, and the project is successfully configured, then the tree of installed ingredients
+   is exported to this directory (the actual files: not symbolic links).
+
+   This option requires rsync.
+
+   This may be useful for preparing continuous integration environments, but it is not
+   recommended for distribution or release purposes (since this would be counter
+   to the goal of cmake-cooking).
+
 -l
 
     Only list available ingredients for a given recipe, and don't do anything else.
@@ -157,7 +169,7 @@ yell_list_only_without_recipe() {
     echo "Cooking: cannot list ingredients without a recipe!" >&2
 }
 
-while getopts "ar:e:i:d:p:t:g:s:lhx" arg; do
+while getopts "ar:e:i:d:p:t:g:s:f:lhx" arg; do
     case "${arg}" in
         a)
             if [ ! -f "${memory_file}" ]; then
@@ -190,6 +202,7 @@ while getopts "ar:e:i:d:p:t:g:s:lhx" arg; do
         t) build_type=${OPTARG} ;;
         g) generator=${OPTARG} ;;
         s) parse_assignment "${OPTARG}" ;;
+        f) export_dir=$(realpath "${OPTARG}") ;;
         l) list_only="1" ;;
         h) usage; exit 0 ;;
         x) nested="1" ;;
@@ -898,6 +911,15 @@ if [ -n "${recipe}" ]; then
     #
 
     ${CMAKE} -DCMAKE_FIND_PACKAGE_NO_PACKAGE_REGISTRY=ON "${@}" .
+
+    #
+    # Optionally export the installed files.
+    #
+
+    if [ -n "${export_dir}" ]; then
+        rsync "${ingredients_dir}/" "${export_dir}" -a --copy-links
+        printf "\nCooking: Exported ingredients to ${export_dir}\n"
+    fi
 fi
 
 #
