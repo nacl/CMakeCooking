@@ -58,6 +58,7 @@ One problem with the first option -- system dependencies -- is that different di
 ## Dependencies
 
 - [GNU Stow](https://www.gnu.org/software/stow/)
+- [(Optional) rsync](https://rsync.samba.org/)
 
 ## Usage
 
