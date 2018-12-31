@@ -1,3 +1,11 @@
+v0.9.0
+------
+2018-12-31
+
+- Require dune version 1.6 for OCaml tests
+- Fix an error when `cooking.sh` is invoked without a recipe ([GH-1](https://github.com/hakuch/CMakeCooking/issues/1))
+- Allow installed ingredients to be exported to the file-system ([GH-2](https://github.com/hakuch/CMakeCooking/issues/2))
+
 v0.8.1
 ------
 2018-10-08
