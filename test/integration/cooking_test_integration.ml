@@ -53,6 +53,9 @@ module type PANTRY = sig
 
   val apple :
     ingredient
+
+  val issue_ep_source_subdir :
+    ingredient
 end
 
 let pantry path =
@@ -71,6 +74,9 @@ let pantry path =
 
     let apple =
       ingredient ~source_dir:Fpath.(path / "apple") ()
+
+    let issue_ep_source_subdir =
+      ingredient ~source_dir:Fpath.(path / "issue" / "ep_source_subdir" / "root") ()
   end : PANTRY)
 
 let prefix_path ps =
@@ -237,6 +243,15 @@ let tests pantry_path log_level =
               (fun _ -> Ok ())))
   in
 
+  let t13 =
+    test "The SOURCE_SUBDIR ExternalProject argument is forwarded correctly" (fun () ->
+        exec_with_cooking
+          ~recipe:"dev"
+          P.issue_ep_source_subdir
+          out
+          (fun _ -> Ok ()))
+  in
+
   [
     t1;
     t2;
@@ -249,7 +264,8 @@ let tests pantry_path log_level =
     t9;
     t10;
     t11;
-    t12
+    t12;
+    t13
   ]
 
 (*
