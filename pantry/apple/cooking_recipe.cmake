@@ -3,7 +3,7 @@ cooking_ingredient (Egg
     SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/extern/egg)
 
 cooking_ingredient (Banana
-  COOKING_RECIPE dev
+  COOKING_RECIPE <DEFAULT>
   REQUIRES Egg
   EXTERNAL_PROJECT_ARGS
     SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/extern/banana)

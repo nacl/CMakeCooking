@@ -30,7 +30,7 @@ source_dir="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 initial_wd=$(pwd)
 memory_file="${initial_wd}/.cooking_memory"
 
-recipe=""
+recipe="${source_dir}/cooking_recipe.cmake"
 declare -a excluded_ingredients
 declare -a included_ingredients
 build_dir="${initial_wd}/build"
@@ -64,6 +64,8 @@ where OPTIONS are:
 -l
 -h
 
+By default, cmake-cooking reads a file called `cooking_recipe.cmake`.
+
 If neither [-i] nor [-e] are specified with a recipe ([-r]), then all ingredients of the recipe
 will be fetched and built.
 
@@ -78,8 +80,11 @@ Option details:
 
 -r RECIPE
 
-    Prepare the named recipe. Recipes are stored in 'recipe/RECIPE.cmake'.
-    If no recipe is indicated, then configure the build without any ingredients.
+    Instead of reading the recipe in a file called `cooking_recipe.cmake`, follow the recipe
+    in the named file.
+
+    If the recipe file is a relative path, it is interpretted relative to the source directory
+    of the project.
 
 -e INGREDIENT
 
@@ -165,10 +170,6 @@ yell_include_exclude_mutually_exclusive() {
     echo "Cooking: [-e] and [-i] are mutually exclusive options!" >&2
 }
 
-yell_list_only_without_recipe() {
-    echo "Cooking: cannot list ingredients without a recipe!" >&2
-}
-
 while getopts "ar:e:i:d:p:t:g:s:f:lhx" arg; do
     case "${arg}" in
         a)
@@ -180,7 +181,13 @@ while getopts "ar:e:i:d:p:t:g:s:f:lhx" arg; do
             source "${memory_file}"
             run_previous && exit 0
             ;;
-        r) recipe=${OPTARG} ;;
+        r)
+            if [[ "${OPTARG}" = /* ]]; then
+                recipe=${OPTARG}
+            else
+                recipe="${source_dir}/${OPTARG}"
+            fi
+            ;;
         e)
             if [[ ${#included_ingredients[@]} -ne 0 ]]; then
                 yell_include_exclude_mutually_exclusive
@@ -211,11 +218,6 @@ while getopts "ar:e:i:d:p:t:g:s:f:lhx" arg; do
 done
 
 shift $((OPTIND - 1))
-
-if [ -n "${list_only}" ] && [ -z "${recipe}" ]; then
-    yell_list_only_without_recipe
-    exit 1
-fi
 
 cooking_dir="${build_dir}/_cooking"
 cache_file="${build_dir}/CMakeCache.txt"
@@ -334,7 +336,7 @@ macro (project name)
         DEPENDS ${_cooking_local_synchronize_marker_file})
 
       list (APPEND CMAKE_PREFIX_PATH ${Cooking_INGREDIENTS_DIR})
-      include ("recipe/${Cooking_RECIPE}.cmake")
+      include (${Cooking_RECIPE})
 
       if (NOT EXISTS ${_cooking_ready_marker_file})
         return ()
@@ -437,10 +439,16 @@ function (_cooking_define_listing_targets)
     ${CMAKE_COMMAND} -E touch ${Cooking_INGREDIENTS_DIR}/.cooking_ingredient_${pa_NAME})
 
   if (pa_RECIPE)
+    if (pa_RECIPE STREQUAL <DEFAULT>)
+      set (recipe_args "")
+    else ()
+      set (recipe_args -r ${pa_RECIPE})
+    endif ()
+
     list (INSERT commands 0
       COMMAND
       ${pa_SOURCE_DIR}/cooking.sh
-      -r ${pa_RECIPE}
+      ${recipe_args}
       -p ${Cooking_INGREDIENTS_DIR}
       -g ${CMAKE_GENERATOR}
       -x
@@ -566,6 +574,12 @@ function (_cooking_populate_ep_configure_command)
     ${ARGN})
 
   if (pa_RECIPE)
+    if (pa_RECIPE STREQUAL <DEFAULT>)
+      set (recipe_args "")
+    else ()
+      set (recipe_args -r ${pa_RECIPE})
+    endif ()
+
     _cooking_prepare_restrictions_arguments (
       IS_EXCLUDING ${pa_IS_EXCLUDING}
       IS_INCLUDING ${pa_IS_INCLUDING}
@@ -575,7 +589,7 @@ function (_cooking_populate_ep_configure_command)
     set (value
       CONFIGURE_COMMAND
       <SOURCE_DIR>/cooking.sh
-      -r ${pa_RECIPE}
+      ${recipe_args}
       -d <BINARY_DIR>
       -p ${Cooking_INGREDIENTS_DIR}
       -g ${CMAKE_GENERATOR}
@@ -842,9 +856,7 @@ mkdir -p "${ingredients_dir}"
 #
 
 if [ -n "${recipe}" ]; then
-    recipe_file="${source_dir}/recipe/${recipe}.cmake"
-
-    if [ ! -f "${recipe_file}" ]; then
+    if [ ! -f "${recipe}" ]; then
         echo "Cooking: The '${recipe}' recipe does not exist!" >&2
         exit 1
     fi

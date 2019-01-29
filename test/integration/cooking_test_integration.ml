@@ -53,6 +53,12 @@ module type PANTRY = sig
 
   val apple :
     ingredient
+
+  val feature_custom_recipe_project :
+    ingredient
+
+  val feature_custom_recipe_consumer :
+    ingredient
 end
 
 let pantry path =
@@ -71,6 +77,12 @@ let pantry path =
 
     let apple =
       ingredient ~source_dir:Fpath.(path / "apple") ()
+
+    let feature_custom_recipe_project =
+      ingredient ~source_dir:Fpath.(path / "feature" / "custom_recipe" / "project") ()
+
+    let feature_custom_recipe_consumer =
+      ingredient ~source_dir:Fpath.(path / "feature" / "custom_recipe" / "consumer") ()
   end : PANTRY)
 
 let prefix_path ps =
@@ -138,17 +150,17 @@ let tests pantry_path log_level =
 
   let t3 =
     test "Project `carrot`" (fun () ->
-        exec_with_cooking ~recipe:"dev" P.carrot out (fun _ -> Ok ()))
+        exec_with_cooking P.carrot out (fun _ -> Ok ()))
   in
 
   let t4 =
     test "Project `banana`" (fun () ->
-        exec_with_cooking ~recipe:"dev" P.banana out (fun _ -> Ok ()))
+        exec_with_cooking P.banana out (fun _ -> Ok ()))
   in
 
   let t5 =
     test "Project `apple`" (fun () ->
-        exec_with_cooking ~recipe:"dev" P.apple out (fun _ -> Ok ()))
+        exec_with_cooking P.apple out (fun _ -> Ok ()))
   in
 
   let t6 =
@@ -163,7 +175,6 @@ let tests pantry_path log_level =
         exec_and_install_with_cmake P.egg out (fun p_e ->
             exec_with_cooking
               ~cmake_args:(prefix_path [p_e])
-              ~recipe:"dev"
               ~restrictions:(`Exclude ["Egg"])
               P.carrot
               out
@@ -176,7 +187,6 @@ let tests pantry_path log_level =
             exec_and_install_with_cmake P.durian out (fun p_d ->
                 exec_with_cooking
                   ~cmake_args:(prefix_path [p_e; p_d])
-                  ~recipe:"dev"
                   ~restrictions:(`Exclude ["Egg"; "Durian"])
                   P.carrot
                   out
@@ -188,7 +198,6 @@ let tests pantry_path log_level =
         exec_and_install_with_cmake P.durian out (fun p_d ->
             exec_with_cooking
               ~cmake_args:(prefix_path [p_d])
-              ~recipe:"dev"
               ~restrictions:(`Include ["Egg"; "Carrot"])
               P.banana
               out
@@ -201,20 +210,8 @@ let tests pantry_path log_level =
             exec_and_install_with_cmake P.durian out (fun p_d ->
                 exec_with_cooking
                   ~cmake_args:(prefix_path [p_e; p_d])
-                  ~recipe:"dev"
                   ~restrictions:(`Include ["Carrot"])
                   P.banana
-                  out
-                  (fun _ -> Ok ()))))
-  in
-
-  let t11 =
-    test "A cooking project can exclude a recipe when its dependencies are satisfied externally" (fun () ->
-        exec_and_install_with_cmake P.egg out (fun p_e ->
-            exec_and_install_with_cmake P.durian out (fun p_d ->
-                exec_with_cooking
-                  ~cmake_args:(prefix_path [p_e; p_d])
-                  P.carrot
                   out
                   (fun _ -> Ok ()))))
   in
@@ -223,7 +220,6 @@ let tests pantry_path log_level =
     test "A cooking project's installed dependencies can be exported" (fun () ->
         with_export_dir (fun export_dir ->
             exec_with_cooking
-              ~recipe:"dev"
               ~export_dir
               P.apple
               out
@@ -237,6 +233,23 @@ let tests pantry_path log_level =
               (fun _ -> Ok ())))
   in
 
+  let t13 =
+    test "A project can have a recipe in a custom file" (fun () ->
+        exec_with_cooking
+          ~recipe:"recipes/dev.cmake"
+          P.feature_custom_recipe_project
+          out
+          (fun _ -> Ok ()))
+  in
+
+  let t14 =
+    test "A project can specify a custom recipe file for an ingredient" (fun () ->
+        exec_with_cooking
+          P.feature_custom_recipe_consumer
+          out
+          (fun _ -> Ok ()))
+  in
+
   [
     t1;
     t2;
@@ -248,8 +261,9 @@ let tests pantry_path log_level =
     t8;
     t9;
     t10;
-    t11;
-    t12
+    t12;
+    t13;
+    t14
   ]
 
 (*
