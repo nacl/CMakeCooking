@@ -1,3 +1,10 @@
+v0.10.0
+------
+2019-01-29
+
+- Write `Cooking.cmake` to the build directory instead of the source directory ([GH-14](https://github.com/hakuch/CMakeCooking/issues/14))
+- Assume a default recipe file called `cooking_recipe.cmake` and change the way custom recipes are resolved to files ([GH-13](https://github.com/hakuch/CMakeCooking/issues/13))
+
 v0.9.0
 ------
 2018-12-31
