@@ -92,7 +92,7 @@ Option details:
 
     For example, if a recipe consists of 'apple', 'banana', 'carrot', and 'donut', then
 
-        ./cooking.sh -r dev -e apple -e donut
+        ./cooking.sh -e apple -e donut
 
     will prepare 'banana' and 'carrot' but not prepare 'apple' and 'donut'.
 
@@ -109,7 +109,7 @@ Option details:
 
    For example, if a recipe consists of 'apple', 'banana', 'carrot', and 'donut' then
 
-       ./cooking.sh -r dev -i apple -i donut
+       ./cooking.sh -i apple -i donut
 
    will prepare 'apple' and 'donut' but not prepare 'banana' and 'carrot'.
 
