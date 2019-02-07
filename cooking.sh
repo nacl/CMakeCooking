@@ -101,33 +101,33 @@ Option details:
 
 -i INGREDIENT
 
-   Include an ingredient from a recipe, ignoring the others. This option can be supplied
-   many times.
+    Include an ingredient from a recipe, ignoring the others. This option can be supplied
+    many times.
 
-   Similar to [-e], but the opposite.
+    Similar to [-e], but the opposite.
 
-   For example, if a recipe consists of 'apple', 'banana', 'carrot', and 'donut' then
+    For example, if a recipe consists of 'apple', 'banana', 'carrot', and 'donut' then
 
-       ./cooking.sh -i apple -i donut
+        ./cooking.sh -i apple -i donut
 
-   will prepare 'apple' and 'donut' but not prepare 'banana' and 'carrot'.
+    will prepare 'apple' and 'donut' but not prepare 'banana' and 'carrot'.
 
-   If an ingredient is not in the "include-list", then it is assumed that all
-   ingredients that are in the list and which depend on it can satisfy that dependency
-   in some other way from the system.
+    If an ingredient is not in the "include-list", then it is assumed that all
+    ingredients that are in the list and which depend on it can satisfy that dependency
+    in some other way from the system.
 
 -d BUILD_DIR (=${build_dir})
 
-   Configure the project and build it in the named directory.
+    Configure the project and build it in the named directory.
 
 -p INGREDIENTS_DIR (=${build_dir}/_cooking/installed)
 
-   Install compiled ingredients into this directory.
+    Install compiled ingredients into this directory.
 
 -t BUILD_TYPE (=${build_type})
 
-   Configure all ingredients and the project with the named CMake build-type.
-   An example build type is "Release".
+    Configure all ingredients and the project with the named CMake build-type.
+    An example build type is "Release".
 
 -g GENERATOR (=${generator})
 
@@ -136,18 +136,18 @@ Option details:
 
 -s VAR=VALUE
 
-   Set an environmental variable 'VAR' to the value 'VALUE' during the invocation of CMake.
+    Set an environmental variable 'VAR' to the value 'VALUE' during the invocation of CMake.
 
 -f EXPORT_DIR
 
-   If provided, and the project is successfully configured, then the tree of installed ingredients
-   is exported to this directory (the actual files: not symbolic links).
+    If provided, and the project is successfully configured, then the tree of installed ingredients
+    is exported to this directory (the actual files: not symbolic links).
 
-   This option requires rsync.
+    This option requires rsync.
 
-   This may be useful for preparing continuous integration environments, but it is not
-   recommended for distribution or release purposes (since this would be counter
-   to the goal of cmake-cooking).
+    This may be useful for preparing continuous integration environments, but it is not
+    recommended for distribution or release purposes (since this would be counter
+    to the goal of cmake-cooking).
 
 -l
 
