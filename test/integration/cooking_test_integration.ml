@@ -236,7 +236,7 @@ let tests pantry_path log_level =
   let t13 =
     test "A project can have a recipe in a custom file" (fun () ->
         exec_with_cooking
-          ~recipe:"recipes/dev.cmake"
+          ~recipe:"dev"
           P.feature_custom_recipe_project
           out
           (fun _ -> Ok ()))
