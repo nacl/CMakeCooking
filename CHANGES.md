@@ -1,3 +1,9 @@
+v0.10.1
+------
+2019-02-07
+
+- Restore the old behavior for recipe file resolution: `-r foo` will resolve to `${source_dir}/recipe/foo.cmake`, and if `-r` is not provided then by default the recipe is expected to be `cooking_recipe.cmake`. ([GH-16](https://github.com/hakuch/CMakeCooking/issues/16))
+
 v0.10.0
 ------
 2019-01-29
