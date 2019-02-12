@@ -15,6 +15,14 @@ To understand how to use `cmake-cooking` with your project, see [APPLY.md](./APP
 
 The only file necessary for using `cmake-cooking` in your C or C++ project is [`cooking.sh`](./cooking.sh).
 
+On development branches, this file has to be generated:
+
+```
+$ make cooking.sh
+```
+
+On tagged releases (and `master`), this file should be present at the top-level of the repository.
+
 The other files and directories are strictly for modelling and testing`cmake-cooking` itself.
 
 - `lib/model` is a library implementing in OCaml the model described in [UNDERSTAND.md](./UNDERSTAND.md). It is tested in `test/model`

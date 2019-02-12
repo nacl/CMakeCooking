@@ -2,8 +2,8 @@
 # cmake-cooking stuff
 #
 
-#**/.cooking_memory
-**/Cooking.cmake
+**/.cooking_memory
+cooking.sh
 
 #
 # C++ stuff
