@@ -2,7 +2,7 @@ THIS_MAKEFILE:=$(shell dirname $(realpath $lastword $(MAKEFILE_LIST)))
 PANTRY=$(THIS_MAKEFILE)/pantry
 VERBOSITY?=info
 
-all: cooking.sh doc test
+all: cooking.sh
 
 cooking.sh: cooking.sh.in Cooking.cmake generate-cooking.sh
 	./generate-cooking.sh
