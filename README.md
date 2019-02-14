@@ -1,6 +1,8 @@
 cmake-cooking - Reproducible development environments for CMake projects
 -----------------------------------------
 
+[![pipeline status](https://gitlab.com/jhaberku/CMakeCooking/badges/develop/pipeline.svg)](https://gitlab.com/jhaberku/CMakeCooking/commits/develop)
+
 `cmake-cooking` is a thin layer over CMake for creating flexible and reproducible development environments for CMake projects with external dependencies. Projects which use `cmake-cooking` will work even if `cmake-cooking` is not installed or used.
 
 ## Quick-start

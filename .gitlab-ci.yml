@@ -1,0 +1,17 @@
+stages:
+  - build
+
+variables:
+  DOCKER_IMAGE: "registry.gitlab.com/jhaberku/cmakecooking:ci"
+
+compile_and_test:
+  stage: build
+  image: $DOCKER_IMAGE
+  script:
+    - opam update
+    - opam pin -y -n add cooking .
+    - opam install -y -t -d --deps-only cooking
+    - make test
+  artifacts:
+    paths:
+      - _build
