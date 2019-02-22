@@ -98,6 +98,12 @@ To fix this, we use the `REQUIRES` argument in the recipe for `Carrot`. This doe
 
 In this way, we can build arbitrary acyclic graphs of dependencies with recipes with maximal flexibility in terms of how we provide each ingredient.
 
+#### ExternalProject Arguments
+
+When using ingredients with dependencies of their own, many normal configuration-related `EXTERNAL_PROJECT_ARGS` will not function, given that CMakeCooking overrides the `CONFIGURE_COMMMAND` argument passed to `ExternalProject_add`.  Typically, you'll usually need to tweak the `cmake` args that Cooking will eventually use.  This can usually be accomplished with the `CMAKE_ARGS` argument.
+
+With recipes that have ingredients that do not use Cooking themselves, the full suite of configuration-related `ExternalProject` args is available.  Such recipes will pass `CONFIGURE_COMMAND` to `ExternalProject_add` only if it is provided.
+
 ### Using `cmake-cooking` with integrated development environments (IDEs)
 
 It is very easy to use `cmake-cooking` with IDEs which offer CMake support. A good example is CLion from JetBrains.
