@@ -2,6 +2,7 @@
 
 #
 # Copyright 2018 Jesse Haber-Kucharsky
+# Copyright 2019 Akamai Technologies, Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -161,8 +162,13 @@ EOF
 }
 
 parse_assignment() {
-    IFS='=' read -ra parts <<< "${1}"
-    export "${parts[0]}"="${parts[1]}"
+    read -r assignment <<< "${1}"
+    eq_idx=$(expr index "$assignment" '=')
+
+    name=${assignment:0:$(($eq_idx - 1))}
+    value=${assignment:$eq_idx}
+
+    export "${name}"="${value}"
 }
 
 yell_include_exclude_mutually_exclusive() {
