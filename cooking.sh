@@ -597,11 +597,7 @@ function (_cooking_populate_ep_configure_command)
       --
       ${pa_COOKING_CMAKE_ARGS})
   elseif (NOT (CONFIGURE_COMMAND IN_LIST ${pa_EXTERNAL_PROJECT_ARGS_LIST}))
-    set (value
-      CONFIGURE_COMMAND
-      ${CMAKE_COMMAND}
-      ${pa_CMAKE_ARGS}
-      <SOURCE_DIR>)
+    set (value "<DEFAULT>")
   else ()
     set (value "")
   endif ()
@@ -641,13 +637,19 @@ function (_cooking_define_ep)
   set (ep_name ingredient_${pa_NAME})
   include (ExternalProject)
 
+  # Arguments that could be set to <DEFAULT> (which will be left unset in the ExternalProject_add
+  # invocation) are not even provided to ExternalProject_add.
+  set (ep_defaultable_args_list)
+  if (NOT (pa_CONFIGURE_COMMAND STREQUAL "<DEFAULT>"))
+    list (APPEND ep_defaultable_args_list CONFIGURE_COMMAND ${pa_CONFIGURE_COMMAND})
+  endif()
+
   set (stamp_dir ${pa_INGREDIENT_DIR}/stamp)
 
   ExternalProject_add (${ep_name}
     DEPENDS ${pa_DEPENDS}
     SOURCE_DIR ${pa_SOURCE_DIR}
     BINARY_DIR ${pa_BINARY_DIR}
-    CONFIGURE_COMMAND ${pa_CONFIGURE_COMMAND}
     BUILD_COMMAND ${pa_BUILD_COMMAND}
     INSTALL_COMMAND ${pa_INSTALL_COMMAND}
     PREFIX ${pa_INGREDIENT_DIR}
@@ -656,6 +658,7 @@ function (_cooking_define_ep)
     CMAKE_ARGS ${pa_CMAKE_ARGS}
     LIST_SEPARATOR :::
     STEP_TARGETS install
+    "${ep_defaultable_args_list}
     "${forwarded_ep_args}")
 
   set (stow_marker_file ${Cooking_INGREDIENTS_DIR}/.cooking_ingredient_${pa_NAME})
