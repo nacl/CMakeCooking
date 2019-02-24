@@ -67,7 +67,7 @@ Simply copy `cooking.sh` into your project's root source directory.
 Your `CMakeLists.txt` file is unchanged except for these two lines after the mandatory `cmake_minimum_required` statement:
 
 ```CMake
-list (APPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/cmake)
+list (APPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_BINARY_DIR})
 include (Cooking OPTIONAL)
 ```
 

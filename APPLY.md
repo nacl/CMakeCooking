@@ -4,8 +4,6 @@ First, it may be useful to understand the [underlying model](./UNDERSTAND.md) fo
 
 We call the description of the dependencies of your project a "recipe". Each dependency described in a recipe is called an "ingredient".
 
-Each recipe is specified in a CMake file with an arbitrary name (which must end in `.cmake`) in a specific directory (`recipe`).
-
 Applying `cmake-cooking` to your project is straightforward provided you adhere to one rule:
 
 ## Rule: write a recipe for each direct dependency of your project
@@ -24,7 +22,7 @@ Each of these projects can be configured by invoking `cmake`.
 
 However, the `carrot` project depends on both `egg` and `durian` directly.
 
-In the root directory of the source directory for `carrot`, we create a `recipe` directory and write in that directory a file `dev.cmake`. This is the specification of a recipe called `dev`:
+In the root source directory for `carrot`, we create a file called `cooking_recipe.cmake` with the following contents:
 
     cooking_ingredient (Durian
       EXTERNAL_PROJECT_ARGS
@@ -48,10 +46,8 @@ Therefore, we have specified that the sources are available at this location wit
 
 To use `cooking.sh` to execute this recipe, we just issue (in the root source directory of `carrot`):
 
-    ./cooking.sh -r dev
+    ./cooking.sh
     
-This means that we wish to execute the `dev` recipe.
-
 By default we will build recipes in `Debug` mode and using the `Ninja` CMake generator. There are other options, and you can learn more with the `-h` option.
 
 When executed, both `Egg` and `Durian` will be configured, built, and installed into the `build/_cooking/installed` directory via symbolic links. The actual build files of each ingredient (which the symbolic links point to) are stored in an ingredient-specific directory `build/_cooking/ingredient`. An example is `build/_cooking/ingredient/Durian`.
@@ -62,7 +58,7 @@ After this, `Carrot` itself is configured with CMake with an amended search path
 
 It is possible to pass arguments directly to invocations of `cmake` by preceeding them with `--`:
 
-    ./cooking.sh -r dev -- -DCarrot_PEEL=ON -DEgg_SCRAMBLE=OFF
+    ./cooking.sh -- -DCarrot_PEEL=ON -DEgg_SCRAMBLE=OFF
     
 #### Including and excluding ingredients
     
@@ -72,7 +68,7 @@ The `-e` ("exclude") and `-i` ("include") options allow us to do this.
 
 For example, if we wish to use `Egg` installed in some other fashion we can exclude it from our recipe:
 
-    ./cooking.sh -r dev -e Egg
+    ./cooking.sh -e Egg
 
 ### Example: A dependency with its own dependencies
 
@@ -87,7 +83,7 @@ For example, consider the `Banana` project:
         SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/extern/durian)
 
     cooking_ingredient (Carrot
-      COOKING_RECIPE dev
+      COOKING_RECIPE <DEFAULT>
       REQUIRES Durian
       EXTERNAL_PROJECT_ARGS
         SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/extern/carrot)
@@ -101,6 +97,12 @@ For example, consider the `Banana` project:
 To fix this, we use the `REQUIRES` argument in the recipe for `Carrot`. This does two things. The first is that it ensures that `Durian` is executed before `Carrot`. The second is that any recipe for `Durian` inside of `Carrot` is *ignored*. Logically, we are indicating that `Durian` is provided by us and `Carrot` should not provide it itself.
 
 In this way, we can build arbitrary acyclic graphs of dependencies with recipes with maximal flexibility in terms of how we provide each ingredient.
+
+#### ExternalProject Arguments
+
+When using ingredients with dependencies of their own, many normal configuration-related `EXTERNAL_PROJECT_ARGS` will not function, given that CMakeCooking overrides the `CONFIGURE_COMMMAND` argument passed to `ExternalProject_add`.  Typically, you'll usually need to tweak the `cmake` args that Cooking will eventually use.  This can usually be accomplished with the `CMAKE_ARGS` argument.
+
+With recipes that have ingredients that do not use Cooking themselves, the full suite of configuration-related `ExternalProject` args is available.  Such recipes will pass `CONFIGURE_COMMAND` to `ExternalProject_add` only if it is provided.
 
 ### Using `cmake-cooking` with integrated development environments (IDEs)
 
@@ -126,7 +128,7 @@ To support work-flows in which many projects are worked-on simultaneously, the `
 
 Suppose there is a project in `~/src/support_library` and a project `~/src/my_app`.
 
-In `~/src/my_app/recipe/dev.cmake` we have
+In `~/src/my_app/cooking_recipe.cmake` we have
 
     cooking_ingredient (SupportLibrary
       LOCAL_RECONFIGURE
