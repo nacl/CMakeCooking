@@ -59,6 +59,9 @@ module type PANTRY = sig
 
   val feature_custom_recipe_consumer :
     ingredient
+      
+  val issue_ep_source_subdir :
+    ingredient
 end
 
 let pantry path =
@@ -83,6 +86,9 @@ let pantry path =
 
     let feature_custom_recipe_consumer =
       ingredient ~source_dir:Fpath.(path / "feature" / "custom_recipe" / "consumer") ()
+
+    let issue_ep_source_subdir =
+      ingredient ~source_dir:Fpath.(path / "issue" / "ep_source_subdir" / "root") ()
   end : PANTRY)
 
 let prefix_path ps =
@@ -215,6 +221,17 @@ let tests pantry_path log_level =
                   out
                   (fun _ -> Ok ()))))
   in
+  
+  let t11 = 
+     test "A cooking project can exclude a recipe when its dependencies are satisfied externally" (fun () ->
+         exec_and_install_with_cmake P.egg out (fun p_e ->
+             exec_and_install_with_cmake P.durian out (fun p_d ->
+                 exec_with_cooking
+                   ~cmake_args:(prefix_path [p_e; p_d])
+                   P.carrot
+                   out
+                   (fun _ -> Ok ()))))
+  in
 
   let t12 =
     test "A cooking project's installed dependencies can be exported" (fun () ->
@@ -249,6 +266,15 @@ let tests pantry_path log_level =
           out
           (fun _ -> Ok ()))
   in
+  
+  let t15 =
+    test "The SOURCE_SUBDIR ExternalProject argument is forwarded correctly" (fun () ->
+        exec_with_cooking
+          ~recipe:"dev"
+          P.issue_ep_source_subdir
+          out
+          (fun _ -> Ok ()))
+  in
 
   [
     t1;
@@ -261,9 +287,11 @@ let tests pantry_path log_level =
     t8;
     t9;
     t10;
+    t11;
     t12;
     t13;
-    t14
+    t14;
+    t15
   ]
 
 (*

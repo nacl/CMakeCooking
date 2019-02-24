@@ -1,0 +1,4 @@
+cooking_ingredient (Dep
+  EXTERNAL_PROJECT_ARGS
+    SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/../dep
+    SOURCE_SUBDIR cmake)
